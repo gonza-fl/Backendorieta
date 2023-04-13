@@ -3,7 +3,6 @@ const productManager= new ProductManager();
 
 const getAllProducts = async (req, res)=>{ 
     const { limit } = req.query;
-    
     try {
         const products = await productManager.getProducts();
         if(limit){
@@ -55,7 +54,6 @@ const addProduct = async (req, res) => {
     const mimetypeArray = req.file.mimetype.split('/');
     const filepath = `${req.file.destination}/${req.file.filename}.${mimetypeArray[mimetypeArray.length - 1]}`;
     try {
-       
         req.body.thumbnail = filepath;
         const newProduct = await productManager.addProduct(req.body);
         return res.status(200).json({

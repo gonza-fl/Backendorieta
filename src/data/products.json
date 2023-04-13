@@ -1,1 +1,22 @@
-[]
+[
+	{
+		"code": "test2024",
+		"title": "Pechera de entrenamiento",
+		"description": "amarillo",
+		"price": "3000",
+		"thumbnail": "public/images/products/95a85452f1c4144c1784726285e44736.jpeg",
+		"stock": "15",
+		"status": "true",
+		"id": 1
+	},
+	{
+		"code": "test2025",
+		"title": "camiseta titular",
+		"description": "amarillo",
+		"price": "3000",
+		"thumbnail": "public/images/products/95a85452f1c4144c1784726285e44736.jpeg",
+		"stock": "15",
+		"status": "true",
+		"id": 2
+	}
+]
