@@ -1,25 +1,23 @@
-import express from 'express';
+import { Router } from 'express';
+import multer from 'multer';
+const upload = multer({ dest: 'public/images/products' });
 
-const router = express.Router();
+import {
+  addProduct,
+  deleteProduct,
+  getAllProducts,
+  getProductById,
+  updateProduct,
+} from '../controllers/product.controllers.js';
 
-router.get('/',async (req, res)=>{
-    const { limit } = req.query;
-    console.log(limit);
-    const products = await productManager.getProducts();
+// instancio mi router en este archivo
+const router = Router();
 
-    if(limit){
-        const productsLimited = products.filter( (el,index) => index<limit);
-        return res.json({
-            ok:true,
-            products:productsLimited,
-            limit
-        })
-    }
-    return res.json({
-        ok:true,
-        products,
-        limit
-    })
-}); //http://localhost:8080/api/products
+router.get('', getAllProducts); //http://localhost:8080/api/products
+router.get('/:id', getProductById); //http://localhost:8080/api/products/:id
+router.post('', upload.single('thumbnail'), addProduct); //http://localhost:8080/api/products
+router.patch('/:id', updateProduct); // http://localhost:8080/api/products/:id
+router.delete('/:id', deleteProduct); // http://localhost:8080/api/products/:id
 
+// se exporta con nombre "productsRouter"
 export default router;

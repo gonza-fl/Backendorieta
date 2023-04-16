@@ -1,110 +1,132 @@
-import ProductManager from '../helpers/productManager.js';
-const productManager= new ProductManager();
+import Product from '../models/Product.js';
 
-const getAllProducts = async (req, res)=>{ 
-    const { limit } = req.query;
-    try {
-        const products = await productManager.getProducts();
-        if(limit){
-            const productsLimited = products.filter( (el,index) => index<limit);
-            return res.json({
-                ok:true,
-                products:productsLimited,
-                limit
-            })
-        }
-        return res.json({
-            ok:true,
-            products,
-            limit
-        })
+const getAllProducts = async (req, res) => {
+  const { page: skip = 1, limit = 10, query = {}, sort } = req.query;
+  try {
+    const {
+      docs: payload,
+      totalPages,
+      prevPage: prevPages,
+      nextPage,
+      page,
+      hasPrevPage,
+      hasNextPage,
+    } = await Product.paginate(JSON.parse(query), {
+      skip,
+      limit,
+      sort: {
+        price: sort,
+      },
+    });
+    const prevLink = hasPrevPage
+      ? `/api/products?page=${prevPages}&limit=${limit}`
+      : null;
+    const nextLink = hasNextPage
+      ? `/api/products?page=${nextPage}&limit=${limit}`
+      : null;
 
-    } catch (error) {
-        return res.status(500).json({
-            ok:false,
-            error,
-            msg:'Internal server error'
-        })
-    }    
-}
+    return res.json({
+      status: 'success',
+      payload,
+      totalPages,
+      prevPages,
+      nextPage,
+      page,
+      hasPrevPage,
+      hasNextPage,
+      prevLink,
+      nextLink,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      error: error.message,
+      msg: 'Internal server error',
+    });
+  }
+};
 
 const getProductById = async (req, res) => {
-    const { id } = req.params;
-    try {
-        const product = await productManager.getProductById(id);
+  const { id } = req.params;
+  try {
+    const product = await Product.findById(id);
 
-        if(!product) return res.status(400).json({
-            ok:false,
-            msg:`There is not exist a product with id: ${id}`
-        })
+    if (!product)
+      return res.status(400).json({
+        ok: false,
+        msg: `There is not exist a product with id: ${id}`,
+      });
 
-        return res.status(200).json({
-            ok: true,
-            data:product
-        })
-    } catch (error) {
-        return res.status(500).json({
-            ok:false,
-            msg:'Server internal error. Please contact with admin server'
-        })
-    }
-}
+    return res.status(200).json({
+      ok: true,
+      data: product,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      msg: 'Server internal error. Please contact with admin server',
+    });
+  }
+};
 
 const addProduct = async (req, res) => {
-    const mimetypeArray = req.file.mimetype.split('/');
-    const filepath = `${req.file.destination}/${req.file.filename}.${mimetypeArray[mimetypeArray.length - 1]}`;
-    try {
-        req.body.thumbnail = filepath;
-        const newProduct = await productManager.addProduct(req.body);
-        return res.status(200).json({
-            ok:true,
-            data: newProduct
-        })
-    } catch (error) {
-        return res.status(500).json({
-            ok:false,
-            msg:'Server internal error. Please contact with admin server'
-        })
-    }
-}
+  try {
+    const newProduct = await Product.create(req.body);
+    return res.status(200).json({
+      ok: true,
+      data: newProduct,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      msg: 'Server internal error. Please contact with admin server',
+    });
+  }
+};
 
 const updateProduct = async (req, res) => {
-    const {id} = req.params;
-    try {
-        const updatedProduct = await productManager.updateProduct(req.body,id)
-        return res.status(200).json({
-            ok:true,
-            data: updatedProduct
-        })
-    } catch (error) {
-        return res.status(500).json({
-            ok:false,
-            msg:'Server internal error. Please contact with admin server'
-        })
-    }
-}
+  const { id } = req.params;
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+    return res.status(200).json({
+      ok: true,
+      data: updatedProduct,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      msg: 'Server internal error. Please contact with admin server',
+    });
+  }
+};
 
 const deleteProduct = async (req, res) => {
+  const { id } = req.params;
 
-    const { id } = req.params;
+  try {
+    const result = await Product.findByIdAndDelete(id);
+    if (!result)
+      return res.status(400).json({
+        ok: false,
+        msg: `The product to delete with the id: ${id} does not exist in the list`,
+      });
+    return res
+      .status(200)
+      .json({ ok: true, msg: 'delete product successfuly' });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      msg: 'Server internal error. Please contact with admin server',
+    });
+  }
+};
 
-    try {
-        const result = await productManager.deleteProduct(Number(id));
-        if(!result) return res.status(400).json({ ok:false, msg:`The product to delete with the id: ${id} does not exist in the list` })
-        return res.status(200).json({ok:true, msg: 'delete product successfuly'})
-    } catch (error) {
-        return res.status(500).json({
-            ok:false,
-            msg:'Server internal error. Please contact with admin server'
-        })
-    }
-}
-
-
-export{
-    getAllProducts,
-    getProductById,
-    addProduct,
-    updateProduct,
-    deleteProduct
-}
+export {
+  getAllProducts,
+  getProductById,
+  addProduct,
+  updateProduct,
+  deleteProduct,
+};
