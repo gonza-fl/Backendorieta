@@ -1,8 +1,13 @@
 <section>
 
-    {{#each arrayProducts}}
+  {{>userData}}
+
+  {{#each arrayProducts}}
     <article>
-        <h2>{{ title }}</h2>
+      <h2>{{title}}</h2>
     </article>
-    {{/each}}
+  {{/each}}
+  {{#if isLoggedIn}}
+    {{>logoutBtn}}
+  {{/if}}
 </section>
